@@ -17,26 +17,26 @@ type Histogram = Map.Map ByteString Int
 
 tabUrlText :: MonadIO m => String -> m (ExitCode, Histogram)
 tabUrlText url =
-  sourceProcessWithConsumer (readUrlProc url) (processText =$= checkResults)
+  sourceProcessWithConsumer (readUrlProc url) processText
 
 -- conduits
 
-processText :: Monad m => Conduit ByteString m Histogram
-processText = Con.map (tabulate . map normalize . C8.words)
+processText :: Monad m => Consumer ByteString m Histogram
+processText = eachWord =$= normalize =$= tabulate
 
-checkResults :: Monad m => Consumer Histogram m Histogram
-checkResults = await >>= return . maybe Map.empty id
+eachWord :: Monad m => Conduit ByteString m ByteString
+eachWord = Con.concatMap C8.words
 
--- helpers
+normalize :: Monad m => Conduit ByteString m ByteString
+normalize = Con.map $ C8.map toLower . C8.filter isAlphaNum
 
-normalize :: ByteString -> ByteString
-normalize = C8.map toLower . C8.filter isAlphaNum
-
-tabulate :: [ByteString] -> Histogram
-tabulate = foldl' (flip (Map.alter addOne)) Map.empty
+tabulate :: Monad m => Consumer ByteString m Histogram
+tabulate = Con.fold (\hist word -> Map.alter addOne word hist) Map.empty
   where
     addOne (Just n) = Just $ succ n
-    addOne _ = Just $ 1
+    addOne _ = Just 1
+
+-- helpers
 
 readUrlProc :: String -> CreateProcess
 readUrlProc url = proc "lynx" ["-dump", "-notitle", "-nolist", url]
