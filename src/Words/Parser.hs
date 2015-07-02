@@ -13,20 +13,26 @@ import qualified Data.ByteString.Char8 as C8
 import qualified Data.Conduit.List as Con
 import qualified Data.Map as Map
 
-tabUrlText :: MonadIO m => String -> m (ExitCode, Map.Map ByteString Int)
-tabUrlText url = sourceProcessWithConsumer (readUrlProc url) processText
+type Histogram = Map.Map ByteString Int
+
+tabUrlText :: MonadIO m => String -> m (ExitCode, Histogram)
+tabUrlText url =
+  sourceProcessWithConsumer (readUrlProc url) (processText =$= checkResults)
+
+-- conduits
+
+processText :: Monad m => Conduit ByteString m Histogram
+processText = Con.map (tabulate . map normalize . C8.words)
+
+checkResults :: Monad m => Consumer Histogram m Histogram
+checkResults = await >>= return . maybe Map.empty id
 
 -- helpers
-
-processText :: Monad m => Consumer ByteString m (Map.Map ByteString Int)
-processText = await >>= return . maybe Map.empty process
-  where
-    process = tabulate . map normalize . C8.words
 
 normalize :: ByteString -> ByteString
 normalize = C8.map toLower . C8.filter isAlphaNum
 
-tabulate :: [ByteString] -> Map.Map ByteString Int
+tabulate :: [ByteString] -> Histogram
 tabulate = foldl' (flip (Map.alter addOne)) Map.empty
   where
     addOne (Just n) = Just $ succ n
