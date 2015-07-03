@@ -1,6 +1,6 @@
 module Main (main) where
 
-import Histogram.Parser (urlTextHist)
+import Histogram (urlTextHistogram)
 
 main :: IO ()
-main = urlTextHist "stellenbauchery.com" >>= putStrLn . show
+main = urlTextHistogram "stellenbauchery.com" >>= putStrLn . show

@@ -12,14 +12,14 @@ import qualified Data.ByteString.Char8 as C8
 import qualified Data.Conduit.List as Con
 import qualified Data.Map as Map
 
-type Histogram = Map ByteString Int
+type Histogram = Map.Map ByteString Int
 
 urlTextHistogram :: MonadIO m => String -> m (Maybe Histogram)
 urlTextHistogram url = do
     (exitCode, hist) <- sourceProcessWithConsumer (lynxOutput url) parseText
     return $ case exitCode of
-      ExitSuccess -> Right hist
-      _ -> Left LynxError
+      ExitSuccess -> Just hist
+      _ -> Nothing
 
 -- process for retrieving URL text
 
