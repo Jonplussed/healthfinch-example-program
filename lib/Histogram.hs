@@ -1,4 +1,4 @@
-module Histogram.Parser (urlTextHist) where
+module Histogram (urlTextHistogram) where
 
 import Data.ByteString (ByteString)
 import Data.Char (isAlphaNum, toLower)
@@ -12,7 +12,16 @@ import qualified Data.ByteString.Char8 as C8
 import qualified Data.Conduit.List as Con
 import qualified Data.Map as Map
 
-import Histogram.Types
+type Histogram = Map ByteString Int
+
+urlTextHistogram :: MonadIO m => String -> m (Maybe Histogram)
+urlTextHistogram url = do
+    (exitCode, hist) <- sourceProcessWithConsumer (lynxOutput url) parseText
+    return $ case exitCode of
+      ExitSuccess -> Right hist
+      _ -> Left LynxError
+
+-- process for retrieving URL text
 
 lynxOptions :: [String]
 lynxOptions =
@@ -22,12 +31,8 @@ lynxOptions =
     , "-validate"   -- allow only http(s) URIs
     ]
 
-urlTextHist :: MonadIO m => String -> m (Either ParseError Histogram)
-urlTextHist url = do
-    (exitCode, hist) <- sourceProcessWithConsumer (lynxOutput url) parseText
-    return $ case exitCode of
-      ExitSuccess -> Right hist
-      _ -> Left PageReadError
+lynxOutput :: String -> CreateProcess
+lynxOutput url = proc "lynx" $ lynxOptions ++ [url]
 
 -- conduits
 
@@ -45,8 +50,3 @@ tabulate = Con.fold (\hist word -> Map.alter addOne word hist) Map.empty
   where
     addOne (Just n) = Just $ succ n
     addOne _ = Just 1
-
--- helpers
-
-lynxOutput :: String -> CreateProcess
-lynxOutput url = proc "lynx" $ lynxOptions ++ [url]
