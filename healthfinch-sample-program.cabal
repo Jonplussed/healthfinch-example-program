@@ -21,6 +21,7 @@ executable url-text-histogram
   -- other-modules:
   -- other-extensions:
   build-depends:       base == 4.*,
+                       blaze-html == 0.8.*,
                        bytestring == 0.10.*,
                        conduit == 1.2.4.1,
                        conduit-extra == 1.1.*,
