@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Server.Response
 ( html
 , redirect
@@ -16,7 +18,7 @@ html :: Html -> Wai.Response
 html contents = Wai.responseBuilder status headers body
   where
     status = Net.status200
-    headers = []
+    headers = [htmlContentType]
     body = renderHtmlBuilder contents
 
 redirect :: ByteString -> Wai.Response
@@ -30,5 +32,10 @@ error404 :: Html -> Wai.Response
 error404 contents = Wai.responseBuilder status headers body
   where
     status = Net.status404
-    headers = []
+    headers = [htmlContentType]
     body = renderHtmlBuilder contents
+
+-- helper functions
+
+htmlContentType :: Net.Header
+htmlContentType = (Net.hContentType, "text/html")

@@ -15,7 +15,7 @@ import qualified Server.Views as App
 import Server.Types
 
 homePath :: Responder
-homePath resp = undefined
+homePath resp = resp $ html App.homeView
 
 indexPath :: Responder
 indexPath resp = undefined

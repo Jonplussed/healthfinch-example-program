@@ -8,8 +8,10 @@ module Server.Views
 
 import Text.Blaze.Html (Html)
 
+import qualified Text.Blaze.Html5 as Html
+
 homeView :: Html
-homeView = undefined
+homeView = Html.h1 $ Html.toHtml "success!"
 
 indexView :: Html
 indexView = undefined
