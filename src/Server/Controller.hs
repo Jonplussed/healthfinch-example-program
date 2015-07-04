@@ -1,30 +1,30 @@
-module Histogram.Controller
+module Server.Controller
 ( homePath
 , indexPath
 , createPath
 , showPath
-, notFoundPath
-, errorPath
+, error404Path
+, error500Path
 ) where
 
-import qualified Network.WAI as Wai
+import qualified Network.Wai as Wai
 
 import Server.Types
 
-homePath :: Wai.Response
-homePath _ = undefined
+homePath :: Responder
+homePath resp = undefined
 
-indexPath :: Wai.Response
-indexPath _ = undefined
+indexPath :: Responder
+indexPath resp = undefined
 
-createPath :: Params -> Wai.Response
-createPath _ = undefined
+createPath :: Params -> Responder
+createPath params resp = undefined
 
-showPath :: UrlId -> Wai.Response
-showPath _ = undefined
+showPath :: UrlId -> Responder
+showPath urlId resp = undefined
 
-error404Path :: Wai.Response
-error404Path = undefined
+error404Path :: Responder
+error404Path resp = undefined
 
-error500Path :: Wai.Response
-error500Path = undefined
+error500Path :: Responder
+error500Path resp = undefined

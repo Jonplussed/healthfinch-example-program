@@ -1,6 +1,10 @@
 module Main (main) where
 
-import Histogram (urlTextHistogram)
+import Network.Wai.Handler.Warp (run)
+import Server (app)
+import System.Environment (getArgs)
 
 main :: IO ()
-main = urlTextHistogram "stellenbauchery.com" >>= putStrLn . show
+main = do
+  [port] <- getArgs
+  run (read port) app
