@@ -1,4 +1,4 @@
-module Server.Views where
+module Server.Views
 ( homeView
 , indexView
 , showView

@@ -7,7 +7,10 @@ module Server.Controller
 , error500Path
 ) where
 
+import Server.Response (html, redirect, error404)
+
 import qualified Network.Wai as Wai
+import qualified Server.Views as App
 
 import Server.Types
 
