@@ -14,11 +14,11 @@ import qualified Data.Map as Map
 
 type Histogram = Map.Map ByteString Int
 
-urlTextHistogram :: MonadIO m => String -> m (Maybe Histogram)
+urlTextHistogram :: MonadIO m => String -> m [(ByteString, Int)]
 urlTextHistogram url = do
-    (exitCode, hist) <- sourceProcessWithConsumer (lynxOutput url) parseText
+    (exitCode, list) <- sourceProcessWithConsumer (lynxOutput url) parseText
     return $ case exitCode of
-      ExitSuccess -> Just hist
+      ExitSuccess -> Just list
       _ -> Nothing
 
 -- process for retrieving URL text
@@ -36,8 +36,8 @@ lynxOutput url = proc "lynx" $ lynxOptions ++ [url]
 
 -- conduits
 
-parseText :: Monad m => Consumer ByteString m Histogram
-parseText = eachWord =$= normalize =$= tabulate
+parseText :: Monad m => Consumer ByteString m [(ByteString, Int)]
+parseText = eachWord =$= normalize =$= tabulate =$= toOrderedList
 
 eachWord :: Monad m => Conduit ByteString m ByteString
 eachWord = Con.concatMap C8.words
@@ -50,3 +50,8 @@ tabulate = Con.fold (\hist word -> Map.alter addOne word hist) Map.empty
   where
     addOne (Just n) = Just $ succ n
     addOne _ = Just 1
+
+toOrderedList :: Monad m => Consumer Histogram m [(ByteString, Int)]
+toOrderedList = Con.map $ sortByAmount . Map.toList
+  where
+    sortByAmount = sortBy (\(_,x) (_,y) -> compare x y)
