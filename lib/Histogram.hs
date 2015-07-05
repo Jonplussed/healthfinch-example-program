@@ -1,10 +1,13 @@
-module Histogram (urlTextHistogram) where
+module Histogram
+( urlTextHistogram
+) where
 
+import Control.Monad.IO.Class (MonadIO)
 import Data.ByteString (ByteString)
 import Data.Char (isAlphaNum, toLower)
 import Data.Conduit (Conduit, Consumer, (=$=))
 import Data.Conduit.Process (sourceProcessWithConsumer)
-import Control.Monad.IO.Class (MonadIO)
+import Network.URI (URI)
 import System.Exit (ExitCode (..))
 import System.Process (CreateProcess, proc)
 
@@ -14,12 +17,12 @@ import qualified Data.Map as Map
 
 type Histogram = Map.Map ByteString Int
 
-urlTextHistogram :: MonadIO m => String -> m [(ByteString, Int)]
+urlTextHistogram :: MonadIO m => URI -> m (Maybe Histogram)
 urlTextHistogram url = do
-    (exitCode, list) <- sourceProcessWithConsumer (lynxOutput url) parseText
-    return $ case exitCode of
-      ExitSuccess -> Just list
-      _ -> Nothing
+    (exitCode, histogram) <- sourceProcessWithConsumer (lynxOutput url) parser
+    case exitCode of
+      ExitSuccess -> return $ Just histogram
+      _ -> return Nothing
 
 -- process for retrieving URL text
 
@@ -31,27 +34,26 @@ lynxOptions =
     , "-validate"   -- allow only http(s) URIs
     ]
 
-lynxOutput :: String -> CreateProcess
-lynxOutput url = proc "lynx" $ lynxOptions ++ [url]
+lynxOutput :: URI -> CreateProcess
+lynxOutput url = proc "lynx" $ lynxOptions ++ [show url]
 
 -- conduits
 
-parseText :: Monad m => Consumer ByteString m [(ByteString, Int)]
-parseText = eachWord =$= normalize =$= tabulate =$= toOrderedList
+parser :: Monad m => Consumer ByteString m Histogram
+parser = eachWord =$= tabulate
 
 eachWord :: Monad m => Conduit ByteString m ByteString
-eachWord = Con.concatMap C8.words
-
-normalize :: Monad m => Conduit ByteString m ByteString
-normalize = Con.map $ C8.map toLower . C8.filter isAlphaNum
+eachWord = Con.concatMap $ C8.splitWith (not . isAlphaNum)
 
 tabulate :: Monad m => Consumer ByteString m Histogram
-tabulate = Con.fold (\hist word -> Map.alter addOne word hist) Map.empty
-  where
-    addOne (Just n) = Just $ succ n
-    addOne _ = Just 1
+tabulate = Con.fold tabWord Map.empty
 
-toOrderedList :: Monad m => Consumer Histogram m [(ByteString, Int)]
-toOrderedList = Con.map $ sortByAmount . Map.toList
+-- helper functions
+
+tabWord :: Histogram -> ByteString -> Histogram
+tabWord histogram word
+    | C8.null word = histogram
+    | otherwise = Map.alter addOne (normalize word) histogram
   where
-    sortByAmount = sortBy (\(_,x) (_,y) -> compare x y)
+    normalize = C8.map toLower
+    addOne = maybe (Just 1) (Just . succ)

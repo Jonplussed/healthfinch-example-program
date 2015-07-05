@@ -1,27 +1,26 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Server.Routes
-( router
-, error400
-, error404
+( routes
+, onError
 ) where
 
+import Control.Monad.Except (throwError)
 import Data.Text (Text)
 import Network.HTTP.Types (StdMethod (..))
 
 import qualified Server.Controller as App
+import qualified Network.Wai as Wai
 
 import Server.Types
 
-router :: [Text] -> StdMethod -> Params -> Responder
-router []               GET  _      = App.homePath
-router ["urls"]         GET  _      = App.indexPath
-router ["urls"]         POST params = App.createPath params
-router ["urls", urlId]  GET  _      = App.showPath (fromPathSegment urlId)
-router _                _    _      = error404
 
-error400 :: Responder
-error400 = App.error500Path
+routes :: [Text] -> StdMethod -> Params -> Response
+routes []               GET  _      = App.homePath
+routes ["urls"]         GET  _      = App.indexPath
+routes ["urls"]         POST params = App.createPath params
+routes ["urls", urlId]  GET  _      = App.showPath $ fromText urlId
+routes _                _    _      = throwError UnknownRoute
 
-error404 :: Responder
-error404 = App.error404Path
+onError :: ServerError -> Wai.Response
+onError _  = App.error404Path

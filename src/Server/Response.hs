@@ -24,7 +24,7 @@ html contents = Wai.responseBuilder status headers body
 redirect :: ByteString -> Wai.Response
 redirect url = Wai.responseBuilder status headers body
   where
-    status = Net.status302
+    status = Net.status303
     headers = [(Net.hLocation, url)]
     body = mempty
 

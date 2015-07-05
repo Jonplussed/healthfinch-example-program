@@ -1,16 +1,25 @@
 module Server.Types where
 
-import Data.ByteString (ByteString)
+import Control.Monad.Except (ExceptT)
 import Data.Map (Map)
-import Data.Text (Text, unpack)
 import Network.URI (URI)
-import Network.Wai (Response, ResponseReceived)
+import Text.Blaze (ToMarkup, toMarkup)
 
-type Params = Map ByteString ByteString
-type Responder = (Response -> IO ResponseReceived) -> IO ResponseReceived
+import qualified Data.ByteString.Char8 as C8
+import qualified Data.Text as Text
+import qualified Network.Wai as Wai
+
+type Params = Map C8.ByteString C8.ByteString
+type Response = ExceptT ServerError IO Wai.Response
 
 newtype UrlId = UrlId Int
 newtype WordCountId = WordCountId Int
+
+data ServerError
+  = UnknownRoute
+  | UnknownHttpMethod
+  | InvalidUrl
+  | CannotCreateHistogram
 
 data UrlEntry = UrlEntry
   { u_id :: UrlId
@@ -20,12 +29,15 @@ data UrlEntry = UrlEntry
 data WordCountEntry = WordCountEntry
   { wc_id :: WordCountId
   , wc_urlId :: UrlId
-  , wc_word :: Text
+  , wc_word :: Text.Text
   , wc_count :: Int
   }
 
-class FromPathSegment a where
-  fromPathSegment :: Text -> a
+class FromText a where
+  fromText :: Text.Text -> a
 
-instance FromPathSegment UrlId where
-  fromPathSegment = UrlId . read . unpack
+instance FromText UrlId where
+  fromText = UrlId . read . Text.unpack
+
+instance ToMarkup C8.ByteString where
+  toMarkup = toMarkup . C8.unpack

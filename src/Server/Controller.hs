@@ -4,30 +4,37 @@ module Server.Controller
 , createPath
 , showPath
 , error404Path
-, error500Path
 ) where
 
+import Control.Monad.Except (throwError)
+import Control.Monad.IO.Class (liftIO)
+import Histogram (urlTextHistogram)
+import Network.URI (parseURI)
 import Server.Response (html, redirect, error404)
 
+import qualified Data.Map as Map
 import qualified Network.Wai as Wai
 import qualified Server.Views as App
 
 import Server.Types
 
-homePath :: Responder
-homePath resp = resp $ html App.homeView
+homePath :: Response
+homePath = return $ html App.homeView
 
-indexPath :: Responder
-indexPath resp = undefined
+indexPath :: Response
+indexPath = undefined
 
-createPath :: Params -> Responder
-createPath params resp = undefined
+createPath :: Params -> Response
+createPath params = undefined
 
-showPath :: UrlId -> Responder
-showPath urlId resp = undefined
+showPath :: UrlId -> Response
+showPath urlId = do
+    histogram <- liftIO $ urlTextHistogram url
+    case histogram of
+      Just h -> return . html . App.showView url $ Map.toList h
+      _ -> throwError CannotCreateHistogram
+  where
+    (Just url) = parseURI "http://stellenbauchery.com"
 
-error404Path :: Responder
-error404Path resp = undefined
-
-error500Path :: Responder
-error500Path resp = undefined
+error404Path :: Wai.Response
+error404Path = undefined
