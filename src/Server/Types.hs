@@ -7,10 +7,12 @@ import Text.Blaze (ToMarkup, toMarkup)
 
 import qualified Data.ByteString.Char8 as C8
 import qualified Data.Text as Text
+import qualified Hasql as Db
+import qualified Hasql.Postgres as Db
 import qualified Network.Wai as Wai
 
 type Params = Map C8.ByteString C8.ByteString
-type ServerM a = ExceptT ServerError IO a
+type ServerM a = Db.Session Db.Postgres (ExceptT ServerError IO) a
 
 newtype UrlId = UrlId Int
 newtype WordCountId = WordCountId Int
@@ -18,9 +20,10 @@ newtype WordCountId = WordCountId Int
 data ServerError
   = UnknownRoute
   | UnknownHttpMethod
-  | CannotCreateHistogram
+  | LynxError
   | InvalidParam C8.ByteString
   | MissingParam C8.ByteString
+  | PostgresError
 
 data UrlEntry = UrlEntry
   { u_id :: UrlId

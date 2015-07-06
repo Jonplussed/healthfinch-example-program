@@ -61,6 +61,7 @@ CREATE TABLE words (
   id           INTEGER    PRIMARY KEY,
   url_id       INTEGER    REFERENCES urls ON DELETE RESTRICT,
   word         CITEXT     NOT NULL,
+  count        INTEGER    NOT NULL,
   created_at   TIMESTAMP  NOT NULL,
   updated_at   TIMESTAMP  NOT NULL
 );

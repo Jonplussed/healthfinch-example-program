@@ -1,23 +1,33 @@
 module Server (app) where
 
-import Control.Monad.Except (runExceptT, throwError)
+import Control.Monad.Except (ExceptT, runExceptT, throwError)
 import Control.Monad.IO.Class (liftIO)
+import Control.Monad.Trans.Class (lift)
 import Data.List (foldl')
 import Network.HTTP.Types (parseMethod)
 import Server.Routes (routes, onError)
 
 import qualified Data.Map as Map
+import qualified Hasql as Db
+import qualified Hasql.Postgres as Db
 import qualified Network.Wai as Wai
 import qualified Network.Wai.Parse as Wai
 
 import Server.Types
 
-app :: Wai.Application
-app request responder = do
-    result <- runExceptT $ router request
+app :: Db.Pool Db.Postgres -> Wai.Application
+app db request responder = do
+    result <- runExceptT $ withSession db $ router request
     case result of
       Right response -> responder response
       Left err -> responder $ onError err
+
+withSession :: Db.Pool Db.Postgres -> ServerM a -> ExceptT ServerError IO a
+withSession db more = do
+    result <- Db.session db more
+    case result of
+      Right r -> return r
+      _       -> throwError PostgresError
 
 router :: Wai.Request -> ServerM Wai.Response
 router request =
@@ -25,7 +35,7 @@ router request =
       Right method -> do
         (params, _) <- liftIO reqBody
         routes reqPath method $ mapParams params
-      Left _ -> throwError UnknownHttpMethod
+      Left _ -> lift $ throwError UnknownHttpMethod
   where
     reqBody = Wai.parseRequestBody Wai.lbsBackEnd request
     reqMethod = parseMethod $ Wai.requestMethod request
