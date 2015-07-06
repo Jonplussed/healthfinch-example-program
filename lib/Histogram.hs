@@ -7,6 +7,7 @@ import Data.ByteString (ByteString)
 import Data.Char (isAlphaNum, toLower)
 import Data.Conduit (Conduit, Consumer, (=$=))
 import Data.Conduit.Process (sourceProcessWithConsumer)
+import Data.Text (Text)
 import Network.URI (URI)
 import System.Exit (ExitCode (..))
 import System.Process (CreateProcess, proc)
@@ -14,8 +15,10 @@ import System.Process (CreateProcess, proc)
 import qualified Data.ByteString.Char8 as C8
 import qualified Data.Conduit.List as Con
 import qualified Data.Map as Map
+import qualified Data.Text.Encoding as Text
+import qualified Data.Text.Encoding.Error as Text
 
-type Histogram = Map.Map ByteString Int
+type Histogram = Map.Map Text Int
 
 urlTextHistogram :: MonadIO m => URI -> m (Maybe Histogram)
 urlTextHistogram url = do
@@ -55,5 +58,7 @@ tabWord histogram word
     | C8.null word = histogram
     | otherwise = Map.alter addOne (normalize word) histogram
   where
-    normalize = C8.map toLower
     addOne = maybe (Just 1) (Just . succ)
+
+normalize :: ByteString -> Text
+normalize = Text.decodeUtf8With (Text.replace '?') . C8.map toLower
