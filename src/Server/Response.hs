@@ -2,7 +2,7 @@
 
 module Server.Response
 ( html
-, redirect
+, redirectTo
 , error404
 ) where
 
@@ -21,8 +21,8 @@ html contents = Wai.responseBuilder status headers body
     headers = [htmlContentType]
     body = renderHtmlBuilder contents
 
-redirect :: ByteString -> Wai.Response
-redirect url = Wai.responseBuilder status headers body
+redirectTo :: ByteString -> Wai.Response
+redirectTo url = Wai.responseBuilder status headers body
   where
     status = Net.status303
     headers = [(Net.hLocation, url)]

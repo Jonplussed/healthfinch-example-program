@@ -10,7 +10,7 @@ import qualified Data.Text as Text
 import qualified Network.Wai as Wai
 
 type Params = Map C8.ByteString C8.ByteString
-type Response = ExceptT ServerError IO Wai.Response
+type ServerM a = ExceptT ServerError IO a
 
 newtype UrlId = UrlId Int
 newtype WordCountId = WordCountId Int
@@ -18,8 +18,9 @@ newtype WordCountId = WordCountId Int
 data ServerError
   = UnknownRoute
   | UnknownHttpMethod
-  | InvalidUrl
   | CannotCreateHistogram
+  | InvalidParam C8.ByteString
+  | MissingParam C8.ByteString
 
 data UrlEntry = UrlEntry
   { u_id :: UrlId

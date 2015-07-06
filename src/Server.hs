@@ -19,7 +19,7 @@ app request responder = do
       Right response -> responder response
       Left err -> responder $ onError err
 
-router :: Wai.Request -> Response
+router :: Wai.Request -> ServerM Wai.Response
 router request =
     case reqMethod of
       Right method -> do

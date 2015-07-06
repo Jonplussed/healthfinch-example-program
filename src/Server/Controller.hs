@@ -1,40 +1,38 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Server.Controller
-( homePath
-, indexPath
-, createPath
-, showPath
-, error404Path
+( indexAction
+, createAction
+, showAction
 ) where
 
 import Control.Monad.Except (throwError)
 import Control.Monad.IO.Class (liftIO)
 import Histogram (urlTextHistogram)
-import Network.URI (parseURI)
-import Server.Response (html, redirect, error404)
+import Network.URI (parseAbsoluteURI)
+import Server.Response (html, redirectTo, error404)
 
 import qualified Data.Map as Map
 import qualified Network.Wai as Wai
+import qualified Server.Error as App
 import qualified Server.Views as App
 
 import Server.Types
 
-homePath :: Response
-homePath = return $ html App.homeView
+indexAction :: Params -> ServerM Wai.Response
+indexAction _ = return $ html App.indexPage
 
-indexPath :: Response
-indexPath = undefined
+createAction :: Params -> ServerM Wai.Response
+createAction params = return $ html App.indexPage
+    -- case Map.lookup "url" params of
+    --   Just url -> case parseAbsoluteURI url of
+    --     Just valid -> do
+    --       histogram <- liftIO $ urlTextHistogram url
+    --       case histogram of
+    --         Just h -> return . html . App.showView url $ Map.toList h
+    --         _ -> throwError CannotCreateHistogram
+    --     _ -> throwError InvalidParam "url"
+    --   _ -> throwError $ MissingParam "url"
 
-createPath :: Params -> Response
-createPath params = undefined
-
-showPath :: UrlId -> Response
-showPath urlId = do
-    histogram <- liftIO $ urlTextHistogram url
-    case histogram of
-      Just h -> return . html . App.showView url $ Map.toList h
-      _ -> throwError CannotCreateHistogram
-  where
-    (Just url) = parseURI "http://stellenbauchery.com"
-
-error404Path :: Wai.Response
-error404Path = undefined
+showAction :: UrlId -> Params -> ServerM Wai.Response
+showAction urlId _ = return $ html App.indexPage

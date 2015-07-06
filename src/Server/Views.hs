@@ -1,11 +1,10 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Server.Views
-( homeView
-, indexView
-, showView
-, error404View
-, error500View
+( indexPage
+, showPage
+, error404Page
+, error500Page
 ) where
 
 import Control.Monad (forM_)
@@ -17,25 +16,22 @@ import qualified Text.Blaze.Html5 as Html
 
 import Server.Types
 
-homeView :: Html
-homeView = Html.h1 $ Html.toHtml ("success!" :: ByteString)
+indexPage :: Html
+indexPage = Html.h1 $ Html.toHtml ("success!" :: ByteString)
 
-indexView :: Html
-indexView = undefined
-
-showView :: URI -> [(ByteString, Int)] -> Html
-showView url words = do
+showPage :: URI -> [(ByteString, Int)] -> Html
+showPage url words = do
     Html.table $ do
       forM_ words $ \(word, count) -> do
         Html.tr $ do
           Html.td $ Html.toHtml word
           Html.td $ Html.toHtml count
 
-error404View :: Html
-error404View = undefined
+error404Page :: Html
+error404Page = undefined
 
-error500View :: Html
-error500View = undefined
+error500Page :: Html
+error500Page = undefined
 
 -- helper functions
 
