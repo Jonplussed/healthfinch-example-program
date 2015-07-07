@@ -4,12 +4,12 @@ import Control.Monad.Except (ExceptT, runExceptT, throwError)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Trans.Class (lift)
 import Data.List (foldl')
-import Network.HTTP.Types (parseMethod)
 import Server.Routes (routes, onError)
 
 import qualified Data.Map as Map
 import qualified Hasql as Db
 import qualified Hasql.Postgres as Db
+import qualified Network.HTTP.Types as Net
 import qualified Network.Wai as Wai
 import qualified Network.Wai.Parse as Wai
 
@@ -31,17 +31,22 @@ withSession db more = do
 
 router :: Wai.Request -> ServerM Wai.Response
 router request =
-    case reqMethod of
-      Right method -> do
-        (params, _) <- liftIO reqBody
-        routes reqPath method $ mapParams params
-      Left _ -> lift $ throwError UnknownHttpMethod
+    case method of
+      Right m -> do
+        postParams <- liftIO $ postParamList request
+        routes path m . mapParams $ postParams ++ queryParams
+      _ -> lift $ throwError UnknownHttpMethod
   where
-    reqBody = Wai.parseRequestBody Wai.lbsBackEnd request
-    reqMethod = parseMethod $ Wai.requestMethod request
-    reqPath = Wai.pathInfo request
+    method = Net.parseMethod $ Wai.requestMethod request
+    path = Wai.pathInfo request
+    queryParams = Net.parseSimpleQuery $ Wai.rawQueryString request
 
 -- helper functions
+
+postParamList :: Wai.Request -> IO [Wai.Param]
+postParamList request = do
+    (params, _) <- Wai.parseRequestBody Wai.lbsBackEnd request
+    return params
 
 mapParams :: [Wai.Param] -> Params
 mapParams = foldl' insert Map.empty
