@@ -17,10 +17,13 @@ import qualified Network.Wai as Wai
 import Server.Types
 
 routes :: [Text] -> StdMethod -> Params -> ServerM Wai.Response
-routes []               GET  = App.indexAction
-routes ["urls"]         POST = App.createAction
-routes ["urls", urlId]  GET  = App.showAction (fromText urlId)
-routes _                _    = const (lift $ throwError UnknownRoute)
+routes []      GET  = App.indexAction
+routes ["url"] POST = App.createAction
+routes ["url"] GET  = App.showAction
+routes _       _    = throw404Error
+
+throw404Error :: Params -> ServerM Wai.Response
+throw404Error _ = lift $ throwError UnknownRoute
 
 onError :: ServerError -> Wai.Response
 onError _  = App.error404
