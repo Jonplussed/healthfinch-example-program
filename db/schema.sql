@@ -3,7 +3,7 @@
 CREATE EXTENSION citext;
 
 CREATE TABLE histogram (
-  url          CITEXT     PRIMARY KEY,
+  url          CITEXT     NOT NULL,
   word         CITEXT     NOT NULL,
   count        INTEGER    NOT NULL
 );
