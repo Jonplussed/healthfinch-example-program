@@ -16,11 +16,11 @@ import qualified Network.Wai as Wai
 
 import Server.Types
 
-routes :: [Text] -> StdMethod -> Params -> ServerM Wai.Response
-routes []      GET  = App.indexAction
-routes ["url"] POST = App.createAction
-routes ["url"] GET  = App.showAction
-routes _       _    = throw404Error
+routes :: StdMethod -> [Text] -> Params -> ServerM Wai.Response
+routes GET  []      = App.indexAction
+routes POST ["url"] = App.createAction
+routes GET  ["url"] = App.showAction
+routes _    _       = throw404Error
 
 throw404Error :: Params -> ServerM Wai.Response
 throw404Error _ = lift $ throwError UnknownRoute
