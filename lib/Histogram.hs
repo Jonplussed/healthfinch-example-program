@@ -1,5 +1,6 @@
 module Histogram
-( urlTextHistogram
+( Histogram
+, urlTextHistogram
 ) where
 
 import Control.Monad.IO.Class (MonadIO)
