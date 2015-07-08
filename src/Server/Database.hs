@@ -1,10 +1,13 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, RankNTypes #-}
 
 module Server.Database where
 
 import Data.Maybe (fromJust)
+
 import qualified Hasql as Db
 import qualified Hasql.Postgres as Db
+
+import Server.Types
 
 poolConfig :: Db.PoolSettings
 poolConfig = fromJust $ Db.poolSettings maxConns timeToLiveSecs
@@ -20,3 +23,9 @@ dbConfig = Db.ParamSettings host port user pass name
     user = ""
     pass = ""
     name = "histogram_dev"
+
+query :: (forall s. Db.Tx Db.Postgres s a) -> ServerM a
+query = Db.tx (Just (txLevel, writeable))
+  where
+    txLevel = Db.ReadCommitted
+    writeable = Just True
