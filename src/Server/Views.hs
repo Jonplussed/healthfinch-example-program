@@ -9,20 +9,27 @@ module Server.Views
 
 import Control.Monad (forM_)
 import Network.URI (URI)
-import Data.ByteString (ByteString)
+import Data.Text (Text)
+import Text.Blaze ((!))
 import Text.Blaze.Html (Html)
 
 import qualified Text.Blaze.Html5 as Html
+import qualified Text.Blaze.Html5.Attributes as Attr
 
 import Server.Types
 
 indexPage :: Html
-indexPage = Html.h1 $ Html.toHtml ("success!" :: ByteString)
+indexPage = template $ do
+    Html.h1 "URL text histogram"
+    Html.h3 "Generate a frequency list of every word at the given URL"
+    Html.form ! Attr.action "/histogram" ! Attr.method "post" $ do
+      Html.input ! Attr.type_ "url"
+      Html.input ! Attr.type_ "submit"
 
-showPage :: URI -> [(ByteString, Int)] -> Html
-showPage url words = do
-    Html.table $ do
-      forM_ words $ \(word, count) -> do
+showPage :: URI -> [(Text, Int)] -> Html
+showPage url words = template $
+    Html.table $
+      forM_ words $ \(word, count) ->
         Html.tr $ do
           Html.td $ Html.toHtml word
           Html.td $ Html.toHtml count
@@ -36,14 +43,8 @@ error500Page = undefined
 -- helper functions
 
 template :: Html -> Html
-template contents = do
+template contents =
     Html.docTypeHtml $ do
-      Html.head $ do
+      Html.head $
         Html.title "URL Text Histogram"
-      Html.body $ do
-        Html.nav $ do
-          Html.ul $ do
-            Html.li "hello"
-
--- stylesheet :: Text -> Html
--- stylesheet url = Html.link ! rel "stylesheet" ! type "text/css" ! href url
+      Html.body contents

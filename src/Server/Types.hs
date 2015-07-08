@@ -3,7 +3,6 @@ module Server.Types where
 import Control.Monad.Except (ExceptT)
 import Data.Map (Map)
 import Network.URI (URI)
-import Text.Blaze (ToMarkup, toMarkup)
 
 import qualified Data.ByteString.Char8 as C8
 import qualified Data.Text as Text
@@ -21,6 +20,3 @@ data ServerError
   | InvalidParam C8.ByteString
   | MissingParam C8.ByteString
   | PostgresError
-
-instance ToMarkup C8.ByteString where
-  toMarkup = toMarkup . C8.unpack

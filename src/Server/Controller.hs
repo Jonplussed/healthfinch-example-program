@@ -26,12 +26,6 @@ import qualified Server.Model as Mod
 
 import Server.Types
 
--- constants
-
-urlParam, urlPath :: C8.ByteString
-urlParam = "url"
-urlPath = "/url"
-
 -- actions
 
 indexAction :: Params -> ServerM Wai.Response
@@ -44,10 +38,13 @@ createAction params = do
     if alreadyExists
       then return ()
       else generateHistogram url
-    return $ redirectTo urlPath params
+    return $ redirectTo "/histogram" params
 
 showAction :: Params -> ServerM Wai.Response
-showAction params = return $ html View.indexPage
+showAction params = do
+    url <- urlFromParams params
+    words <- query $ Mod.listHistogramWords url
+    return . html $ View.showPage url words
 
 -- helper functions
 
@@ -58,6 +55,8 @@ urlFromParams params =
         Just url -> return url
         _ -> lift . throwError $ InvalidParam urlParam
       _ -> lift . throwError $ MissingParam urlParam
+  where
+    urlParam = "url"
 
 generateHistogram :: URI -> ServerM ()
 generateHistogram url = do

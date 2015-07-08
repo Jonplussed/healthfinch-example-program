@@ -10,20 +10,22 @@ import Control.Monad.Trans.Class (lift)
 import Data.Text (Text)
 import Network.HTTP.Types (StdMethod (..))
 
-import qualified Server.Controller as App
-import qualified Server.Error as App
+import qualified Server.Controller as Cont
+import qualified Server.Error as Err
 import qualified Network.Wai as Wai
 
 import Server.Types
 
 routes :: StdMethod -> [Text] -> Params -> ServerM Wai.Response
-routes GET  []      = App.indexAction
-routes POST ["url"] = App.createAction
-routes GET  ["url"] = App.showAction
-routes _    _       = throw404Error
+routes GET  []            = Cont.indexAction
+routes POST ["histogram"] = Cont.createAction
+routes GET  ["histogram"] = Cont.showAction
+routes _    _             = throw404Error
+
+onError :: ServerError -> Wai.Response
+onError _  = Err.error404
+
+-- helpers
 
 throw404Error :: Params -> ServerM Wai.Response
 throw404Error _ = lift $ throwError UnknownRoute
-
-onError :: ServerError -> Wai.Response
-onError _  = App.error404
