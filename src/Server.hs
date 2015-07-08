@@ -32,7 +32,7 @@ withDbConn db more = do
 router :: Wai.Request -> ServerM Wai.Response
 router request = do
     (method, paramList) <- requestParams request
-    routes method (Wai.pathInfo request) (mapParams paramList)
+    routes method (Wai.pathInfo request) (paramListToMap paramList)
 
 requestParams :: Wai.Request -> ServerM (Http.StdMethod, [Wai.Param])
 requestParams request =
@@ -52,7 +52,7 @@ requestParams request =
 
 -- helper functions
 
-mapParams :: [Wai.Param] -> Params
-mapParams = foldl' insert Map.empty
+paramListToMap :: [Wai.Param] -> Params
+paramListToMap = foldl' insert Map.empty
   where
     insert params (name, val) = Map.insert name val params
