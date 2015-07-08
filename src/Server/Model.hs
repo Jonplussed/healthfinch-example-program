@@ -1,26 +1,65 @@
 {-# LANGUAGE QuasiQuotes, OverloadedStrings #-}
 
-module Server.Model where
+module Server.Model
+( createHistogram
+, listHistogramWords
+, doesHistogramExist
+) where
 
-import Data.Text (Text)
+import Data.Text (Text, pack)
 import Hasql.Postgres (Postgres)
+import Histogram (Histogram)
+import Network.URI (URI)
 
+import qualified Data.Map as Map
 import qualified Hasql as Db
 
 import Server.Types
 
-createWord :: Text -> Text -> Int -> Db.Tx Postgres s ()
-createWord url word count =
-    Db.unitEx $ [Db.stmt|
-      INSERT INTO histogram (url, word, count)
-      VALUES (?,?,?)
-    |] url word count
+createHistogram :: URI -> Histogram -> Db.Tx Postgres s ()
+createHistogram url histogram =
+    mapM_ create $ Map.toList histogram
+  where
+    create (word, freq) = createWordSql (urlText url) word freq
 
-listWordsForUrl :: Text -> Db.Tx Postgres s [(Text, Int)]
-listWordsForUrl url =
-    Db.listEx $ [Db.stmt|
-      SELECT (word, count)
+listHistogramWords :: URI -> Db.Tx Postgres s [(Text, Int)]
+listHistogramWords = listWordsSql . urlText
+
+doesHistogramExist :: URI -> Db.Tx Postgres s Bool
+doesHistogramExist url = do
+    exists <- testForUrlSql $ urlText url
+    case exists of
+      Just _ -> return True
+      _ -> return False
+
+-- queries
+
+createWordSql :: Text -> Text -> Int -> Db.Tx Postgres s ()
+createWordSql url word frequency =
+    Db.unitEx [Db.stmt|
+      INSERT INTO histogram (url, word, frequency)
+      VALUES ($url, $word, $frequency)
+    |]
+
+listWordsSql :: Text -> Db.Tx Postgres s [(Text, Int)]
+listWordsSql url =
+    Db.listEx [Db.stmt|
+      SELECT word, frequency
       FROM histogram
-      WHERE url = ?
-      ORDER BY count
-    |] url
+      WHERE url = $url
+      ORDER BY frequency
+    |]
+
+testForUrlSql :: Text -> Db.Tx Postgres s (Maybe (Text, Int))
+testForUrlSql url =
+    Db.maybeEx [Db.stmt|
+      SELECT word, frequency
+      FROM histogram
+      WHERE url = $url
+      LIMIT 1
+    |]
+
+-- helpers
+
+urlText :: URI -> Text
+urlText = pack . show
