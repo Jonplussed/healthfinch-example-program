@@ -20,3 +20,4 @@ data ServerError
   | InvalidParam C8.ByteString
   | MissingParam C8.ByteString
   | PostgresError
+  deriving Show

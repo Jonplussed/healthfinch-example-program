@@ -4,6 +4,7 @@ module Server.Response
 ( html
 , redirectTo
 , error404
+, error500
 ) where
 
 import Data.ByteString (ByteString)
@@ -36,6 +37,13 @@ error404 :: Html -> Wai.Response
 error404 contents = Wai.responseBuilder status headers body
   where
     status = Net.status404
+    headers = [htmlContentType]
+    body = renderHtmlBuilder contents
+
+error500 :: Html -> Wai.Response
+error500 contents = Wai.responseBuilder status headers body
+  where
+    status = Net.status500
     headers = [htmlContentType]
     body = renderHtmlBuilder contents
 

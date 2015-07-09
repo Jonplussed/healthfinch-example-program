@@ -23,7 +23,8 @@ routes GET  ["histogram"] = Cont.showAction
 routes _    _             = throw404Error
 
 onError :: ServerError -> Wai.Response
-onError _  = Err.error404
+onError UnknownRoute = Err.error404
+onError err = Err.error500 err
 
 -- helpers
 

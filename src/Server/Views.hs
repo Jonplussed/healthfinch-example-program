@@ -35,10 +35,12 @@ showPage url words = template $
           Html.td $ Html.toHtml count
 
 error404Page :: Html
-error404Page = undefined
+error404Page = template $
+    Html.p "Error 404: Page Not found"
 
-error500Page :: Html
-error500Page = undefined
+error500Page :: ServerError -> Html
+error500Page err = template $
+    Html.p . Html.toHtml $ "Error 500: " ++ show err
 
 -- helper functions
 
