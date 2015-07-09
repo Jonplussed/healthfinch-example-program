@@ -18,26 +18,33 @@ import qualified Text.Blaze.Html5.Attributes as Attr
 
 import Server.Types
 
-indexPage :: Html
-indexPage = template $ do
-    Html.h1 "URL text histogram"
-    Html.h3 "Generate a frequency list of every word at the given URL"
+indexPage :: [(Text, Text, Int, String)] -> Html
+indexPage rows = template $ do
     Html.form ! Attr.action "/histogram" ! Attr.method "post" $ do
       Html.input ! Attr.type_ "url" ! Attr.name "url"
       Html.input ! Attr.type_ "submit"
+    Html.table $ do
+      Html.tr $ do
+        Html.th "URL"
+        Html.th "Most Frequent Word"
+        Html.th "Count"
+      forM_ rows $ \(url, word, freq, href) ->
+        Html.tr $ do
+          Html.td $
+            Html.a ! Attr.href (Html.stringValue href) $ Html.toHtml url
+          Html.td $ Html.toHtml word
+          Html.td $ Html.toHtml freq
 
 showPage :: URI -> [(Text, Int)] -> Html
 showPage _ rows = template $
     Html.table $ do
-      Html.thead $
+      Html.tr $ do
+        Html.th "Word"
+        Html.th "Frequency"
+      forM_ rows $ \(word, freq) ->
         Html.tr $ do
-          Html.th "Word"
-          Html.th "Frequency"
-      Html.tbody $
-        forM_ rows $ \(word, count) ->
-          Html.tr $ do
-            Html.td $ Html.toHtml word
-            Html.td $ Html.toHtml count
+          Html.td $ Html.toHtml word
+          Html.td $ Html.toHtml freq
 
 error404Page :: Html
 error404Page = template $
@@ -54,4 +61,7 @@ template contents =
     Html.docTypeHtml $ do
       Html.head $
         Html.title "URL Text Histogram"
-      Html.body contents
+      Html.body $ do
+        Html.h1 "URL Text Histogram"
+        Html.h3 "See the frequency of every word at  given URL"
+        contents

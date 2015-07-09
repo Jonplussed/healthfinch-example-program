@@ -9,12 +9,16 @@ module Server.Controller
 import Control.Monad.Except (throwError)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Trans.Class (lift)
+import Data.Text (Text)
 import Histogram (urlTextHistogram)
 import Network.URI (URI)
 import Server.Database (query)
 import Server.Response (html, redirectTo)
 
+import qualified Data.ByteString.Char8 as C8
 import qualified Data.Map as Map
+import qualified Data.Text.Encoding as Text
+import qualified Network.HTTP.Types as Http
 import qualified Network.Wai as Wai
 import qualified Server.Views as View
 import qualified Server.Model.Histogram as Hist
@@ -25,7 +29,9 @@ import Server.Types
 -- actions
 
 indexAction :: Params -> ServerM Wai.Response
-indexAction _ = return $ html View.indexPage
+indexAction _ = do
+    recorded <- query Hist.listUrls
+    return . html . View.indexPage $ map withHref recorded
 
 createAction :: Params -> ServerM Wai.Response
 createAction params = do
@@ -58,3 +64,9 @@ generateHistogram url = do
     case histogram of
       Just h -> query $ Hist.createHistogram url h
       _ -> lift $ throwError LynxError
+
+withHref :: (Text, Text, Int) -> (Text, Text, Int, String)
+withHref (url, word, freq) = (url, word, freq, href)
+  where
+    href = C8.unpack $ "/histogram" `mappend` Http.renderSimpleQuery True params
+    params = [("url", Text.encodeUtf8 url)]
