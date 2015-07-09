@@ -8,7 +8,6 @@ module Server.Response
 ) where
 
 import Data.ByteString (ByteString)
-import Data.Text (Text)
 import Text.Blaze.Html (Html)
 import Text.Blaze.Html.Renderer.Utf8 (renderHtmlBuilder)
 

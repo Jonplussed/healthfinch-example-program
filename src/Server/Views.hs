@@ -27,12 +27,17 @@ indexPage = template $ do
       Html.input ! Attr.type_ "submit"
 
 showPage :: URI -> [(Text, Int)] -> Html
-showPage url words = template $
-    Html.table $
-      forM_ words $ \(word, count) ->
+showPage _ rows = template $
+    Html.table $ do
+      Html.thead $
         Html.tr $ do
-          Html.td $ Html.toHtml word
-          Html.td $ Html.toHtml count
+          Html.th "Word"
+          Html.th "Frequency"
+      Html.tbody $
+        forM_ rows $ \(word, count) ->
+          Html.tr $ do
+            Html.td $ Html.toHtml word
+            Html.td $ Html.toHtml count
 
 error404Page :: Html
 error404Page = template $

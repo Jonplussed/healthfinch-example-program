@@ -14,8 +14,6 @@ import Network.URI (URI)
 import qualified Data.Map as Map
 import qualified Hasql as Db
 
-import Server.Types
-
 createHistogram :: URI -> Histogram -> Db.Tx Postgres s ()
 createHistogram url histogram =
     mapM_ create $ Map.toList histogram

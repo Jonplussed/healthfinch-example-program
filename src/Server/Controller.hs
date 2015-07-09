@@ -9,18 +9,14 @@ module Server.Controller
 import Control.Monad.Except (throwError)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Trans.Class (lift)
-import Hasql.Postgres (Postgres)
-import Histogram (Histogram, urlTextHistogram)
+import Histogram (urlTextHistogram)
 import Network.URI (URI, parseAbsoluteURI)
 import Server.Database (query)
-import Server.Response (html, redirectTo, error404)
+import Server.Response (html, redirectTo)
 
 import qualified Data.ByteString.Char8 as C8
 import qualified Data.Map as Map
-import qualified Data.Text as Text
-import qualified Hasql as Db
 import qualified Network.Wai as Wai
-import qualified Server.Error as Err
 import qualified Server.Views as View
 import qualified Server.Model as Mod
 
@@ -43,8 +39,8 @@ createAction params = do
 showAction :: Params -> ServerM Wai.Response
 showAction params = do
     url <- urlFromParams params
-    words <- query $ Mod.listHistogramWords url
-    return . html $ View.showPage url words
+    rows <- query $ Mod.listHistogramWords url
+    return . html $ View.showPage url rows
 
 -- helper functions
 
