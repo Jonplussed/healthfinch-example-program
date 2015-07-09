@@ -34,12 +34,24 @@ That's it! Now just visit `localhost:1337` to use the running application.
 
 ## Caveats
 
-- The form only allows full URLs (including the host).
-- Input and server are not particularly user-friendly.
+- The form only allows full URLs, i.e. the host is required.
+- Input and server errors are not particularly user-friendly.
+
+## Why the Lynx Dependency?
+
+Nothing is better at parsing the contents of various documents (particularly
+HTML) than a browser, and attempting to program such would likely lead to
+insanity.
+
+Instead I pass the validated URL to Lynx and process the streaming results via
+[conduits][5] (which HOMG are awesome and you should totally use them in any
+data processing applications!).
+
+  [5]: http://hackage.haskell.org/package/conduit
 
 ## What's the Point?
 
-There's actually two points:
+There are two:
 
 1. I was asked to build this as part of a job application.
 2. I've repeatedly heard that "_Haskell-framework-of-your-choice_ is just a
@@ -70,7 +82,7 @@ been myriad. I've learned that:
 
   [3]: http://rubyonrails.org
 
-### Types are _absolutely_ for humans first.
+#### Types are _absolutely_ for humans first.
 
 I cannot imagine attempting an operation at this level or lower without types
 to ensure the correctness of and guide the architecture of this program. Beyond
@@ -119,15 +131,3 @@ types) control over the HTTP request/response lifetime would have proven
 invaluable on any larger applications I've dealt with. And again, I cannot
 overstate the value of referential transparency for any long-term software
 system.
-
-## I noticed you're not actually parsing the HTML
-
-And why would I? You know what's really great at parsing HTML? A browser. And
-what's really great at determining the textual content of a web page? A
-text-only browser.
-
-That's why instead I pass the validated URL to Lynx and process the streaming
-results via [conduits][5] (which HOMG are awesome and you should totally use
-them in any data processing applications!).
-
-  [5]: http://hackage.haskell.org/package/conduit
