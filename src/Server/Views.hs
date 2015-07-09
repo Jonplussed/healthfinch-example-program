@@ -36,7 +36,8 @@ indexPage rows = template $ do
           Html.td $ Html.toHtml freq
 
 showPage :: URI -> [(Text, Int)] -> Html
-showPage _ rows = template $
+showPage url rows = template $ do
+    Html.p . Html.toHtml $ "Top 10 words used in " ++ show url
     Html.table $ do
       Html.tr $ do
         Html.th "Word"
