@@ -34,15 +34,16 @@ router request = do
     (method, paramList) <- requestParams request
     routes method (Wai.pathInfo request) (paramListToMap paramList)
 
+-- NOTE: the HTTP spec does not describe how conflicting query parameters and
+-- POST body parameter should be handled. I've elected to ignore all query
+-- parameters during a POST request.
 requestParams :: Wai.Request -> ServerM (Http.StdMethod, [Wai.Param])
 requestParams request =
     case Http.parseMethod $ Wai.requestMethod request of
       Right m@Http.GET ->
-        -- return only the query string params
         let params = Http.parseSimpleQuery $ Wai.rawQueryString request in
         return (m, params)
       Right m@Http.POST -> do
-        -- return only the POST body params
         (params, _) <- liftIO $ Wai.parseRequestBody Wai.lbsBackEnd request
         return (m, params)
       Right m ->
