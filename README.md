@@ -34,7 +34,8 @@ That's it! Now just visit `localhost:1337` to use the running application.
 
 ## Caveats
 
-Input and server are not particularly user-friendly at this time.
+- The form only allows full URLs (including the host).
+- Input and server are not particularly user-friendly.
 
 ## What's the Point?
 
