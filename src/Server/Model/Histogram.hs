@@ -46,14 +46,18 @@ createWordSql url word frequency =
 listUrlsSql :: Db.Tx Postgres s [(Text, Text, Int)]
 listUrlsSql =
     Db.listEx [Db.stmt|
-      SELECT DISTINCT url, most.word, most.frequency
-      FROM histogram hist, LATERAL (
+      WITH distinct_urls AS (
+        SELECT DISTINCT url
+        FROM histogram
+      )
+      SELECT url, result.word, result.frequency
+      FROM distinct_urls dist, LATERAL (
         SELECT word, frequency
         FROM histogram
-        WHERE url = hist.url
+        WHERE url = dist.url
         ORDER BY frequency DESC
         LIMIT 1
-      ) most
+      ) result
       ORDER BY url
     |]
 
