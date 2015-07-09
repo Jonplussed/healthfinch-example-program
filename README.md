@@ -40,8 +40,8 @@ been myriad. I've learned that:
 
 I cannot imagine attempting an operation at this level or lower without types
 to ensure the correctness of and guide the architecture of this program. Beyond
-assisting with construction, I've managed to learn quite about HTTP _from the
-types alone_.
+assisting with construction, I've managed to learn quite a bit about HTTP _from
+the types alone_.
 
 I've abstracted this philosophy into a currently unrefined talk, [Learning
 through Libraries][4], which I hope to refine into something worth giving at
@@ -54,15 +54,17 @@ some beginner Haskell conference track.
 These results really call into question the intentional referential opacity of
 frameworks like Rails. The functional pipeline of languages like Haskell
 ensures that the HTTP request and subsequent response can be traced
-throughout the life of the program without having to consult entropied
-documentation— no meta-programming magic required!
+throughout the lifecycle of the program, and without having to consult
+entropied and unproven documentation
+
+No meta-programming magic is required!
 
 #### The compromises required when adopting a framework are _heavy_.
 
 Did you know that the HTTP spec doesn't describe how conflicting query
 and POST body parameters should be resolved? This means the arbitrary decision
-is left to framework to decide— and for the programmer to discover via ad-hoc
-experimentation. And this is true for many more arbitrary decisions.
+is left to each framework to decide— and for the programmer to discover via
+ad-hoc experimentation. And this is true for many more arbitrary decisions.
 
 Constructing a service from this lower level— but with the assistance of
 types— means that the arbitrary decisions are yours and are discernible via
@@ -70,7 +72,7 @@ the aforementioned referential transparency.
 
 #### The benefits of Haskell are more in the longer-term.
 
-I often describe Haskell as "front-loading the programming effort" because the
+I often describe Haskell as "front-loading the programming effort", because the
 types ensure that any possible error states are described and resolved. The
 greater payoff exists in the longer-term, because once constructed, such
 systems are demonstrably more robust.
@@ -93,7 +95,7 @@ And why would I? You know what's really great at parsing HTML? A browser. And
 what's really great at determining the textual content of a web page? A
 text-only browser.
 
-That's why I simply pass the validated URL to Lynx and process the streaming
+That's why instead I pass the validated URL to Lynx and process the streaming
 results via [conduits][5] (which HOMG are awesome and you should totally use
 them in any data processing applications!).
 
