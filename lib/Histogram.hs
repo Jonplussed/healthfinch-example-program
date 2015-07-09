@@ -35,7 +35,6 @@ lynxOptions =
     [ "-dump"       -- send doc text to STDOUT
     , "-notitle"    -- don't display the page title
     , "-nolist"     -- don't list links at end of output
-    , "-validate"   -- allow only http(s) URIs
     ]
 
 lynxOutput :: URI -> CreateProcess
