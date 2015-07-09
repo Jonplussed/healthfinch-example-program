@@ -47,7 +47,7 @@ listWordsSql url =
       SELECT word, frequency
       FROM histogram
       WHERE url = $url
-      ORDER BY frequency
+      ORDER BY frequency DESC
     |]
 
 testForUrlSql :: Text -> Db.Tx Postgres s (Maybe (Text, Int))

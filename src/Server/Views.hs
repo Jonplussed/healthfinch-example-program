@@ -23,7 +23,7 @@ indexPage = template $ do
     Html.h1 "URL text histogram"
     Html.h3 "Generate a frequency list of every word at the given URL"
     Html.form ! Attr.action "/histogram" ! Attr.method "post" $ do
-      Html.input ! Attr.type_ "url"
+      Html.input ! Attr.type_ "url" ! Attr.name "url"
       Html.input ! Attr.type_ "submit"
 
 showPage :: URI -> [(Text, Int)] -> Html

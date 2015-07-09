@@ -19,5 +19,5 @@ data ServerError
   | LynxError
   | InvalidParam C8.ByteString
   | MissingParam C8.ByteString
-  | PostgresError
+  | PostgresError String
   deriving Show

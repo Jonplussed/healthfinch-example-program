@@ -27,7 +27,7 @@ withDbConn db more = do
     result <- Db.session db more
     case result of
       Right r -> return r
-      _ -> throwError PostgresError
+      Left err -> throwError . PostgresError $ show err
 
 router :: Wai.Request -> ServerM Wai.Response
 router request = do
