@@ -131,3 +131,5 @@ types) control over the HTTP request/response lifetime would have proven
 invaluable on any larger applications I've dealt with. And again, I cannot
 overstate the value of referential transparency for any long-term software
 system.
+
+For a short-term application, though, this was hell.
