@@ -1,4 +1,8 @@
-module Server.Types where
+module Server.Types
+( Params
+, ServerM
+, ServerError (..)
+) where
 
 import Control.Monad.Except (ExceptT)
 import Data.Map (Map)
@@ -15,6 +19,5 @@ data ServerError
   | UnknownHttpMethod
   | LynxError
   | InvalidParam C8.ByteString
-  | MissingParam C8.ByteString
   | PostgresError String
   deriving Show
