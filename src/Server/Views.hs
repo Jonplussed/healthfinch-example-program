@@ -20,9 +20,12 @@ import Server.Types
 
 indexPage :: [(Text, Text, Int, String)] -> Html
 indexPage rows = template $ do
+    Html.p "See the frequency of every word at the given URL"
     Html.form ! Attr.action "/histogram" ! Attr.method "post" $ do
       Html.input ! Attr.type_ "url" ! Attr.name "url"
       Html.input ! Attr.type_ "submit"
+
+    Html.h3 "Previous URLs entered:"
     Html.table $ do
       Html.tr $ do
         Html.th "URL"
@@ -37,7 +40,11 @@ indexPage rows = template $ do
 
 showPage :: URI -> [(Text, Int)] -> Html
 showPage url rows = template $ do
-    Html.p . Html.toHtml $ "Top 10 words used in " ++ show url
+    Html.p $ do
+      Html.toHtml $ ("Top 10 words used in " :: String)
+      Html.a ! Attr.href (Html.stringValue urlStr) $ Html.toHtml urlStr
+      Html.toHtml $ (". " :: String)
+      Html.a ! Attr.href "/" $ "Try another URL"
     Html.table $ do
       Html.tr $ do
         Html.th "Word"
@@ -46,6 +53,8 @@ showPage url rows = template $ do
         Html.tr $ do
           Html.td $ Html.toHtml word
           Html.td $ Html.toHtml freq
+  where
+    urlStr = show url
 
 error404Page :: Html
 error404Page = template $
@@ -60,9 +69,33 @@ error500Page err = template $
 template :: Html -> Html
 template contents =
     Html.docTypeHtml $ do
-      Html.head $
+      Html.head $ do
         Html.title "URL Text Histogram"
+        Html.style $ Html.toHtml stylesheet
       Html.body $ do
         Html.h1 "URL Text Histogram"
-        Html.h3 "See the frequency of every word at  given URL"
         contents
+
+-- NOTE: for *any* other application, I would add a static-file-serving WAI
+-- middleware to serve assets. Because the "assets" are just a single
+-- stylesheet, however, that doesn't seem worthwhile.
+stylesheet :: String
+stylesheet = unlines
+    [ "body {"
+    , "  font-size: 14px;"
+    , "  font-family: Helvetica, sans-serif;"
+    , "}"
+    , ""
+    , "table {"
+    , "  border-collapse: collapse;"
+    , "}"
+    , ""
+    , "table td, table th {"
+    , "  text-align: left;"
+    , "  padding: 5px;"
+    , "}"
+    , ""
+    , "tr:nth-child(even) td, tr:nth-child(even) th {"
+    , "  background-color: #EEE;"
+    , "}"
+    ]
