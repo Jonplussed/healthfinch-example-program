@@ -10,15 +10,15 @@ import Control.Monad.Except (throwError)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Trans.Class (lift)
 import Histogram (urlTextHistogram)
-import Network.URI (URI, parseAbsoluteURI)
+import Network.URI (URI)
 import Server.Database (query)
 import Server.Response (html, redirectTo)
 
-import qualified Data.ByteString.Char8 as C8
 import qualified Data.Map as Map
 import qualified Network.Wai as Wai
 import qualified Server.Views as View
-import qualified Server.Model as Mod
+import qualified Server.Model.Histogram as Hist
+import qualified Server.Model.Url as Url
 
 import Server.Types
 
@@ -30,7 +30,7 @@ indexAction _ = return $ html View.indexPage
 createAction :: Params -> ServerM Wai.Response
 createAction params = do
     url <- urlFromParams params
-    alreadyExists <- query $ Mod.doesHistogramExist url
+    alreadyExists <- query $ Hist.doesHistogramExist url
     if alreadyExists
       then return ()
       else generateHistogram url
@@ -39,24 +39,22 @@ createAction params = do
 showAction :: Params -> ServerM Wai.Response
 showAction params = do
     url <- urlFromParams params
-    rows <- query $ Mod.listHistogramWords url
+    rows <- query $ Hist.listHistogramWords url
     return . html $ View.showPage url rows
 
 -- helper functions
 
 urlFromParams :: Params -> ServerM URI
 urlFromParams params =
-    case Map.lookup urlParam params of
-      Just bytes -> case parseAbsoluteURI (C8.unpack bytes) of
-        Just url -> return url
-        _ -> lift . throwError $ InvalidParam urlParam
-      _ -> lift . throwError $ MissingParam urlParam
+    case parsedUrl of
+      Just url -> return url
+      _ -> lift . throwError $ InvalidParam "url"
   where
-    urlParam = "url"
+    parsedUrl = Map.lookup "url" params >>= Url.parseUrl
 
 generateHistogram :: URI -> ServerM ()
 generateHistogram url = do
     histogram <- liftIO $ urlTextHistogram url
     case histogram of
-      Just h -> query $ Mod.createHistogram url h
+      Just h -> query $ Hist.createHistogram url h
       _ -> lift $ throwError LynxError

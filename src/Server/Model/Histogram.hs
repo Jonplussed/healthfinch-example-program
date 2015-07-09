@@ -1,14 +1,16 @@
 {-# LANGUAGE QuasiQuotes, OverloadedStrings #-}
 
-module Server.Model
-( createHistogram
+module Server.Model.Histogram
+( Histogram
+, urlTextHistogram
+, createHistogram
 , listHistogramWords
 , doesHistogramExist
 ) where
 
 import Data.Text (Text, pack)
 import Hasql.Postgres (Postgres)
-import Histogram (Histogram)
+import Histogram (Histogram, urlTextHistogram)
 import Network.URI (URI)
 
 import qualified Data.Map as Map
